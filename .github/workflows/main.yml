@@ -22,14 +22,14 @@ jobs:
           npm install
           npm test
           
-      - name: Build Docker image (not used in this deployment, but kept for clarity)
+      - name: Build Docker image (locally)
         run: docker build -t nodejs-app .
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to EC2
+      - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -44,24 +44,27 @@ jobs:
             sudo yum install git -y
 
             # 2. Stop and forcefully remove the existing container
-            # This is a robust way to clean up the old app.
+            # The -f flag stops and removes the container in one go.
             # "|| true" ensures the script doesn't fail if the container doesn't exist.
             docker rm -f nodejs-app || true
 
-            # 3. Prepare the deployment directory on the EC2 instance
-            # This logic safely creates the 'app' directory if it doesn't exist.
+            # 3. Handle the git repository state on the EC2 instance
+            # This robust check ensures the repository is always in a good state.
+            # It will pull if valid, or re-clone if it's missing or corrupted.
             cd /home/ec2-user || exit 1  # Navigate to the user's home directory
             
-            # Check if the app directory already exists
-            if [ ! -d "app" ]; then
-              echo "Cloning the repository for the first time..."
+            if [ -d "app" ] && git -C app rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+              echo "App directory exists and is a valid Git repo. Pulling latest code..."
+              cd app || exit 1
+              git pull
+            else
+              echo "App directory is missing or corrupted. Re-cloning the repository."
+              # Remove the existing directory to ensure a clean clone
+              rm -rf app
               # You MUST replace the placeholder URL below with your actual repository URL
               git clone https://github.com/kingakwa/my-nodejs-app.git app
+              cd app || exit 1
             fi
-            
-            # Navigate into the app directory and pull the latest changes
-            cd app || exit 1
-            git pull
 
             # 4. Build the new Docker image from the latest code
             # This fixes the "Dockerfile: no such file or directory" error
