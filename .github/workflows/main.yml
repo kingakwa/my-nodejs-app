@@ -10,7 +10,7 @@ docker rmi nodejs-app || true
 cd /home/ec2-user || mkdir /home/ec2-user && cd /home/ec2-user
 if [ ! -d "app" ]; then
   echo "Cloning the repository for the first time..."
-  git clone https://github.com/kingakwa/my-nodejs-app.git app
+  git clone https://github.com/YOUR-USERNAME/my-nodejs-app.git app
 fi
 cd app || exit
 git pull
