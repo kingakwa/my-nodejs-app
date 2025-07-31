@@ -42,7 +42,7 @@ jobs:
           docker rm nodejs-app || true
           docker rmi nodejs-app || true
           cd ~/app || mkdir ~/app && cd ~/app
-          git clone https://github.com/YOUR-USERNAME/my-nodejs-app.git app || cd app && git pull
+          git clone https://github.com/kingakwa/my-nodejs-app.git app || cd app && git pull
           docker build -t nodejs-app .
           if docker run -d -p 3000:3000 --name nodejs-app nodejs-app; then
             echo "✅ Deployment successful"
