@@ -1,12 +1,53 @@
-deploy:
+name: CI/CD for Node.js App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install dependencies and run tests
+      run: |
+        npm install
+        npm test
+
+    - name: Build Docker image
+      run: docker build -t nodejs-app .
+
+  deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          script: whoami
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.KEY }}
+        port: ${{ secrets.PORT }}
+        script: |
+          docker tag nodejs-app nodejs-app:previous || true
+          docker stop nodejs-app || true
+          docker rm nodejs-app || true
+          docker rmi nodejs-app || true
+          cd ~/app || mkdir ~/app && cd ~/app
+          git clone https://github.com/kingakwa/my-nodejs-app.git app || cd app && git pull
+          docker build -t nodejs-app .
+          if docker run -d -p 3000:3000 --name nodejs-app nodejs-app; then
+            echo "✅ Deployment successful"
+          else
+            echo "❌ Deployment failed, rolling back..."
+            docker rm -f nodejs-app || true
+            docker run -d -p 3000:3000 --name nodejs-app nodejs-app:previous
+          fi
