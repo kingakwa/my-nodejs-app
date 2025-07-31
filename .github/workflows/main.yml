@@ -1,24 +1,77 @@
-# First, install Git if it's not already there
-sudo yum install git -y
+name: CI/CD for Node.js App
 
-# Stop and remove old containers and images (errors are expected on first run)
-docker stop nodejs-app || true
-docker rm nodejs-app || true
-docker rmi nodejs-app || true
+on:
+  push:
+    branches:
+      - main
 
-# Prepare the deployment directory
-cd /home/ec2-user || mkdir /home/ec2-user && cd /home/ec2-user
-if [ ! -d "app" ]; then
-  echo "Cloning the repository for the first time..."
-  git clone https://github.com/YOUR-USERNAME/my-nodejs-app.git app
-fi
-cd app || exit
-git pull
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-# Build and run the new Docker image
-docker build -t nodejs-app .
-if docker run -d -p 3000:3000 --name nodejs-app nodejs-app; then
-  echo "✅ Deployment successful"
-else
-  echo "❌ Deployment failed"
-fi
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies and run tests
+        run: |
+          npm install
+          npm test
+          
+      - name: Build Docker image (not used in this deployment, but kept for clarity)
+        run: docker build -t nodejs-app .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            # --- START of Deployment Script on EC2 Instance ---
+
+            # 1. Install Git on the EC2 instance (if not already installed)
+            # This fixes the "git: command not found" error
+            sudo yum install git -y
+
+            # 2. Stop and forcefully remove the existing container
+            # This is a robust way to clean up the old app.
+            # "|| true" ensures the script doesn't fail if the container doesn't exist.
+            docker rm -f nodejs-app || true
+
+            # 3. Prepare the deployment directory on the EC2 instance
+            # This logic safely creates the 'app' directory if it doesn't exist.
+            cd /home/ec2-user || exit 1  # Navigate to the user's home directory
+            
+            # Check if the app directory already exists
+            if [ ! -d "app" ]; then
+              echo "Cloning the repository for the first time..."
+              # You MUST replace the placeholder URL below with your actual repository URL
+              git clone https://github.com/kingakwa/my-nodejs-app.git app
+            fi
+            
+            # Navigate into the app directory and pull the latest changes
+            cd app || exit 1
+            git pull
+
+            # 4. Build the new Docker image from the latest code
+            # This fixes the "Dockerfile: no such file or directory" error
+            docker build -t nodejs-app .
+
+            # 5. Run the new container, exposing port 3000
+            if docker run -d -p 3000:3000 --name nodejs-app nodejs-app; then
+              echo "✅ Deployment successful"
+            else
+              echo "❌ Deployment failed"
+            fi
+            
+            # --- END of Deployment Script on EC2 Instance ---
