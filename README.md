@@ -77,13 +77,25 @@ node index.js
 
 ## ☁️ step 5: Create an EC2 Server on AWS
 1.Go to AWS > EC2 > Launch Instance
+
 2.Choose Amazon Linux 2 or Ubuntu
+
 3.Allow ports 22 (SSH), 80 (HTTP), and 3000 (App)
+
 4.Assign an Elastic IP
+
 5.SSH into instance:
+
+<img width="908" height="290" alt="Image" src="https://github.com/user-attachments/assets/75b76998-042f-4056-9d76-d37be8aaf40e" />
+
+
 ```
 ssh -i "your-key.pem" ec2-user@<your-ec2-ip>
 ```
+
+<img width="557" height="151" alt="Image" src="https://github.com/user-attachments/assets/4835a0d1-5350-4f1f-b484-ca53ecc6d707" />
+
+
 ## 🔧 step 6: Setup Server for Docker & Nginx
 On EC2 Instance:
 ```
