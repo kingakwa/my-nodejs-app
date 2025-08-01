@@ -31,14 +31,25 @@ my-nodejs-app/
 ```
 ## 📷 Architecture Diagram (Described)
 
+<img width="311" height="203" alt="Image" src="https://github.com/user-attachments/assets/b186dc2c-9aea-4678-a35d-280b548208ef" />
+
 🔧 Setup Instructions
-1. Clone the Repo
-   
+✅ Create my-nodejs-app GitHub Repo with All Project Files
+## 🟢1.Create the GitHub Repository 
+1.Go to https://github.com/new
+2.Repository name: my-nodejs-app
+3.Keep it Public or Private
+4.DO NOT initialize with a README, .gitignore, or license yet (we’ll add them locally)
+5.Click Create Repository
+
+## 🟢2. Clone the Repo to your local machine
+
 ```
    git clone https://github.com/YOUR-USERNAME/my-nodejs-app.git
    cd my-nodejs-app 
 ```
-
+## 🟢3. Add the Project Files Locally
+📁 File: index.js 
 2. Run Locally
 ```
 npm install
