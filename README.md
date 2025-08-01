@@ -52,10 +52,15 @@ my-nodejs-app/
 ## 🟢step 3: Add the Project Files Locally
 use the touch command:
 -📁 File: index.js: https://github.com/kingakwa/my-nodejs-app/blob/main/index.js
+
 -📁 File: package.json: https://github.com/kingakwa/my-nodejs-app/blob/main/package.json
+
 -📁 File: test.js: https://github.com/kingakwa/my-nodejs-app/blob/main/test.js
+
 -📁 File: .dockerignore: https://github.com/kingakwa/my-nodejs-app/blob/main/.dockerignore
+
 -📁 File: Dockerfile: https://github.com/kingakwa/my-nodejs-app/blob/main/Dockerfile
+
 -📁 File: .github/workflows/deploy.yml:  https://github.com/kingakwa/my-nodejs-app/blob/main/.github/workflows/main.yml
 
 ## 🟢4: Commit and Push All Files
